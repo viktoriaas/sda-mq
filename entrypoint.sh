@@ -14,7 +14,13 @@ openssl req -x509 -newkey rsa:2048 \
     chmod 600 /var/lib/rabbitmq/ssl/mq-server.*
 fi
 
+
 cat >> "/var/lib/rabbitmq/rabbitmq.conf" <<EOF
+cluster_formation.peer_discovery_backend  = rabbit_peer_discovery_k8s
+cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
+cluster_formation.k8s.address_type = hostname
+cluster_formation.node_cleanup.interval = 10
+cluster_partition_handling = autoheal
 listeners.ssl.default = 5671
 ssl_options.cacertfile = ${MQ_CA:-/etc/ssl/certs/ca-certificates.crt}
 ssl_options.certfile = ${MQ_SERVER_CERT:-/var/lib/rabbitmq/ssl/mq-server.pem}
@@ -280,7 +286,18 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "value": "rabbit@localhost"
     }
   ],
-  "policies": [],
+  "policies": [
+    {
+      "name": "ha-all",
+      "pattern": ".*",
+      "vhost": "${MQ_VHOST:-/}",
+      "definition": {
+        "ha-mode": "all",
+        "ha-sync-mode": "automatic",
+        "ha-sync-batch-size": 1
+      }
+    }
+  ],
   "queues": [
     {
       "name": "archived",

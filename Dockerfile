@@ -1,4 +1,4 @@
-FROM rabbitmq:3.7.8-management-alpine
+FROM rabbitmq:3.8.3-management-alpine
 
 ARG BUILD_DATE
 ARG SOURCE_COMMIT
@@ -13,9 +13,9 @@ ENV RABBITMQ_CONFIG_FILE=/var/lib/rabbitmq/rabbitmq
 ENV RABBITMQ_ADVANCED_CONFIG_FILE=/var/lib/rabbitmq/advanced
 ENV RABBITMQ_LOG_BASE=/var/lib/rabbitmq
 
-RUN apk add --no-cache ca-certificates openssl
+RUN yum -y install ca-certificates openssl
 
-RUN rabbitmq-plugins enable --offline rabbitmq_federation rabbitmq_federation_management rabbitmq_shovel rabbitmq_shovel_management
+RUN rabbitmq-plugins enable --offline rabbitmq_federation rabbitmq_federation_management rabbitmq_shovel rabbitmq_shovel_management rabbitmq_peer_discovery_k8s rabbitmq_peer_discovery_common
 
 COPY entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
