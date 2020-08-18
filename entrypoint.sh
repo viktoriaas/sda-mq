@@ -358,7 +358,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
   ],
   "exchanges": [
     {
-      "name": "lega",
+      "name": "${MQ_EXCHANGE:-lega}",
       "vhost": "${MQ_VHOST:-/}",
       "type": "topic",
       "durable": true,
@@ -369,7 +369,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
   ],
   "bindings": [
     {
-      "source": "lega",
+      "source": "${MQ_EXCHANGE:-lega}",
       "vhost": "${MQ_VHOST:-/}",
       "destination_type": "queue",
       "arguments": {},
@@ -377,7 +377,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "routing_key": "archived"
     },
     {
-      "source": "lega",
+      "source": "${MQ_EXCHANGE:-lega}",
       "vhost": "${MQ_VHOST:-/}",
       "destination_type": "queue",
       "arguments": {},
@@ -385,7 +385,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "routing_key": "files"
     },
     {
-      "source": "lega",
+      "source": "${MQ_EXCHANGE:-lega}",
       "vhost": "${MQ_VHOST:-/}",
       "destination_type": "queue",
       "arguments": {},
@@ -393,15 +393,15 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "routing_key": "files.completed"
     },
     {
-      "source": "lega",
+      "source": "${MQ_EXCHANGE:-lega}",
       "vhost": "${MQ_VHOST:-/}",
       "destination_type": "queue",
       "arguments": {},
       "destination": "files.verified",
-      "routing_key": "files.verified"
+      "routing_key": "verified"
     },
     {
-      "source": "lega",
+      "source": "${MQ_EXCHANGE:-lega}",
       "vhost": "${MQ_VHOST:-/}",
       "destination_type": "queue",
       "arguments": {},
@@ -409,7 +409,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "routing_key": "files.error"
     },
     {
-      "source": "lega",
+      "source": "${MQ_EXCHANGE:-lega}",
       "vhost": "${MQ_VHOST:-/}",
       "destination_type": "queue",
       "arguments": {},
@@ -417,7 +417,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "routing_key": "files.inbox"
     },
     {
-      "source": "lega",
+      "source": "${MQ_EXCHANGE:-lega}",
       "vhost": "${MQ_VHOST:-/}",
       "destination_type": "queue",
       "arguments": {},
@@ -425,7 +425,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "routing_key": "files.processing"
     },
     {
-      "source": "lega",
+      "source": "${MQ_EXCHANGE:-lega}",
       "vhost": "${MQ_VHOST:-/}",
       "destination_type": "queue",
       "arguments": {},

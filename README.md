@@ -11,6 +11,7 @@ The following environment variables can be used to configure the broker:
 | `MQ_VHOST` | Default vhost other than `/` |
 | `MQ_VERIFY` | Set to `verify_none` to disable verification of client certificate |
 | `MQ_USER` | Default user (with admin rights) |
+| `MQ_EXCHANGE` | Default exchange for Standalone version (defaults to `lega`) |
 | `MQ_PASSWORD_HASH` | Password hash for the above user |
 | `CEGA_CONNECTION` | DSN URL for the shovels and federated queues with CentralEGA |
 
