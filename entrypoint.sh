@@ -365,6 +365,15 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "auto_delete": false,
       "internal": false,
       "arguments": {}
+    },
+     {
+      "name": "cega",
+      "vhost": "${MQ_VHOST:-/}",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
     }
   ],
   "bindings": [
@@ -402,6 +411,14 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
     },
     {
       "source": "${MQ_EXCHANGE:-lega}",
+      "vhost": "${MQ_VHOST:-/}",
+      "destination_type": "queue",
+      "arguments": {},
+      "destination": "files.error",
+      "routing_key": "files.error"
+    },
+    {
+      "source": "cega",
       "vhost": "${MQ_VHOST:-/}",
       "destination_type": "queue",
       "arguments": {},
