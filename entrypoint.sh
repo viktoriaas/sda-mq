@@ -93,7 +93,10 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "apply-to": "queues",
       "priority": 0,
       "definition": {
-        "federation-upstream": "CEGA-files"
+        "federation-upstream": "CEGA-files",
+        "ha-mode": "all",
+        "ha-sync-mode": "automatic",
+        "ha-sync-batch-size": 1
       }
     },
     {
@@ -103,7 +106,10 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "apply-to": "queues",
       "priority": 0,
       "definition": {
-        "federation-upstream": "CEGA-ids"
+        "federation-upstream": "CEGA-ids",
+        "ha-mode": "all",
+        "ha-sync-mode": "automatic",
+        "ha-sync-batch-size": 1
       }
     }
   ],
