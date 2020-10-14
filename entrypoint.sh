@@ -454,6 +454,14 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "arguments": {},
       "destination": "stableIDs",
       "routing_key": "stableIDs"
+    },
+    {
+      "source": "${MQ_EXCHANGE:-lega}",
+      "vhost": "${MQ_VHOST:-/}",
+      "destination_type": "queue",
+      "arguments": {},
+      "destination": "mappings",
+      "routing_key": "mappings"
     }
   ]
 }
