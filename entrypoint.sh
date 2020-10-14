@@ -361,6 +361,13 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "auto_delete": false,
       "arguments": {}
     },
+    {
+      "name": "mappings",
+      "vhost": "${MQ_VHOST:-/}",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
   ],
   "exchanges": [
     {
