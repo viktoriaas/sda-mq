@@ -63,17 +63,6 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
   ],
   "parameters": [
     {
-      "name": "CEGA-ids",
-      "vhost": "${MQ_VHOST:-/}",
-      "component": "federation-upstream",
-      "value": {
-        "ack-mode": "on-confirm",
-        "queue": "v1.stableIDs",
-        "trust-user-id": false,
-        "uri": "${CEGA_CONNECTION}"
-      }
-    },
-    {
       "name": "CEGA-files",
       "vhost": "${MQ_VHOST:-/}",
       "component": "federation-upstream",
@@ -98,24 +87,18 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "ha-sync-mode": "automatic",
         "ha-sync-batch-size": 1
       }
-    },
-    {
-      "vhost": "${MQ_VHOST:-/}",
-      "name": "CEGA-ids",
-      "pattern": "stableIDs",
-      "apply-to": "queues",
-      "priority": 0,
-      "definition": {
-        "federation-upstream": "CEGA-ids",
-        "ha-mode": "all",
-        "ha-sync-mode": "automatic",
-        "ha-sync-batch-size": 1
-      }
     }
   ],
   "queues": [
-    {
-      "name": "stableIDs",
+        {
+      "name": "archived",
+      "vhost": "${MQ_VHOST:-/}",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+        {
+      "name": "completed",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
       "auto_delete": false,
@@ -129,7 +112,35 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "arguments": {}
     },
     {
-      "name": "archived",
+      "name": "inbox",
+      "vhost": "${MQ_VHOST:-/}",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "ingest",
+      "vhost": "${MQ_VHOST:-/}",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "mappings",
+      "vhost": "${MQ_VHOST:-/}",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "stableIDs",
+      "vhost": "${MQ_VHOST:-/}",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "verified",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
       "auto_delete": false,
@@ -138,7 +149,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
   ],
   "exchanges": [
     {
-      "name": "cega",
+      "name": "to_cega",
       "vhost": "${MQ_VHOST:-/}",
       "type": "topic",
       "durable": true,
@@ -147,22 +158,12 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "arguments": {}
     },
     {
-      "name": "lega",
+      "name": "sda",
       "vhost": "${MQ_VHOST:-/}",
       "type": "topic",
       "durable": true,
       "auto_delete": false,
       "internal": false,
-      "arguments": {}
-    }
-  ],
-  "bindings": [
-    {
-      "source": "lega",
-      "vhost": "${MQ_VHOST:-/}",
-      "destination": "archived",
-      "destination_type": "queue",
-      "routing_key": "archived",
       "arguments": {}
     }
   ]
@@ -174,95 +175,120 @@ MQ_VHOST="/${MQ_VHOST}"
 fi
 cat > "/var/lib/rabbitmq/advanced.config" <<EOF
 [
-  {rabbit,
-    [{tcp_listeners, []}
+  {rabbit,  [
+    {tcp_listeners, []}
   ]},
-  {rabbitmq_shovel,
-    [{shovels, [
-      {to_cega,
-        [{source,
-          [{protocol, amqp091},
-            {uris, ["amqp://${MQ_VHOST:-}"]},
-            {declarations, [{'queue.declare', [{exclusive, true}]},
-              {'queue.bind',
-                [{exchange, <<"cega">>},
-                  {queue, <<>>},
-                  {routing_key, <<"#">>}
-                ]}
-            ]},
-            {queue, <<>>},
-            {prefetch_count, 10}
-          ]},
-          {destination,
-            [{protocol, amqp091},
-              {uris, ["${CEGA_CONNECTION}"]},
-              {declarations, []},
-              {publish_properties, [{delivery_mode, 2}]},
-              {publish_fields, [{exchange, <<"localega.v1">>}]}]},
-          {ack_mode, on_confirm},
-          {reconnect_delay, 5}
+  {rabbitmq_shovel, [
+    {shovels, [
+      {to_cega, [
+        {source, [
+          {protocol, amqp091},
+          {uris,[ "amqp://${MQ_VHOST:-}" ]},
+          {declarations,  [
+                            {'queue.declare', [{exclusive, true}]},
+                            {'queue.bind', [{exchange, <<"to_cega">>}, {queue, <<>>}, {routing_key, <<"#">>}]}
+                          ]},
+          {queue, <<>>},
+          {prefetch_count, 10}
         ]},
-      {cega_completion,
-        [{source,
-          [{protocol, amqp091},
-            {uris, ["amqp://${MQ_VHOST:-}"]},
-            {declarations, [{'queue.declare', [{exclusive, true}]},
-              {'queue.bind',
-                [{exchange, <<"lega">>},
-                  {queue, <<>>},
-                  {routing_key, <<"completed">>}
-                ]}
-            ]},
-            {queue, <<>>},
-            {prefetch_count, 10}
-          ]},
-          {destination,
-            [{protocol, amqp091},
-              {uris, ["amqp://${MQ_VHOST:-}"]},
-              {declarations, []},
-              {publish_properties, [{delivery_mode, 2}]},
-              {publish_fields, [{exchange, <<"cega">>},
-                {routing_key, <<"files.completed">>}
-              ]}
-            ]},
-          {ack_mode, on_confirm},
-          {reconnect_delay, 5}
-        ]},
-      {cega_verification,
-        [{source,
-          [{protocol, amqp091},
-            {uris, ["amqp://${MQ_VHOST:-}"]},
-            {declarations, [{'queue.declare', [{exclusive, true}]},
-              {'queue.bind',
-                [{exchange, <<"lega">>},
-                  {queue, <<>>},
-                  {routing_key, <<"verified">>}
-                ]}
-            ]},
-            {queue, <<>>},
-            {prefetch_count, 10}
-          ]},
-          {destination,
-            [{protocol, amqp091},
-              {uris, ["amqp://${MQ_VHOST:-}"]},
-              {declarations, []},
-              {publish_properties, [{delivery_mode, 2}]},
-              {publish_fields, [{exchange, <<"cega">>},
-                {routing_key, <<"files.verified">>}
-              ]}
-            ]},
-          {ack_mode, on_confirm},
-          {reconnect_delay, 5}
+        {destination, [
+                        {protocol, amqp091},
+                        {uris, ["${CEGA_CONNECTION}"]},
+                        {declarations, []},
+                        {publish_properties, [{delivery_mode, 2}]},
+                        {publish_fields, [{exchange, <<"localega.v1">>}]}
+                      ]},
+        {ack_mode, on_confirm},
+        {reconnect_delay, 5}
+      ]},
+      {cega_completion, [
+        {source,  [
+                    {protocol, amqp091},
+                    {uris, ["amqp://${MQ_VHOST:-}"]},
+                    {declarations, [{'queue.declare', [{exclusive, true}] }, {'queue.bind', [{exchange, <<"sda">>}, {queue, <<>>}, {routing_key, <<"completed">>}] } ] },
+                    {queue, <<>>},
+                    {prefetch_count, 10}
+                  ]},
+        {destination, [
+                        {protocol, amqp091},
+                        {uris, ["amqp://${MQ_VHOST:-}"]},
+                        {declarations, []},
+                        {publish_properties, [{delivery_mode, 2}]},
+                        {publish_fields, [{exchange, <<"to_cega">>},
+                        {routing_key, <<"files.completed">>}
+                      ]},
+        {ack_mode, on_confirm},
+        {reconnect_delay, 5}
         ]}
+      ]},
+      {cega_error, [
+        {source,  [
+                    {protocol, amqp091},
+                    {uris, ["amqp://${MQ_VHOST:-}"]},
+                    {declarations, [{'queue.declare', [{exclusive, true}] }, {'queue.bind', [{exchange, <<"sda">>}, {queue, <<>>}, {routing_key, <<"error">>}] } ] },
+                    {queue, <<>>},
+                    {prefetch_count, 10}
+                  ]},
+        {destination, [
+                        {protocol, amqp091},
+                        {uris, ["amqp://${MQ_VHOST:-}"]},
+                        {declarations, []},
+                        {publish_properties, [{delivery_mode, 2}]},
+                        {publish_fields, [{exchange, <<"to_cega">>},
+                        {routing_key, <<"files.error">>}
+                      ]},
+        {ack_mode, on_confirm},
+        {reconnect_delay, 5}
+        ]}
+      ]},
+      {cega_inbox, [
+        {source,  [
+                    {protocol, amqp091},
+                    {uris, ["amqp://${MQ_VHOST:-}"]},
+                    {declarations, [{'queue.declare', [{exclusive, true}] }, {'queue.bind', [{exchange, <<"sda">>}, {queue, <<>>}, {routing_key, <<"inbox">>}] } ] },
+                    {queue, <<>>},
+                    {prefetch_count, 10}
+                  ]},
+        {destination, [
+                        {protocol, amqp091},
+                        {uris, ["amqp://${MQ_VHOST:-}"]},
+                        {declarations, []},
+                        {publish_properties, [{delivery_mode, 2}]},
+                        {publish_fields, [{exchange, <<"to_cega">>},
+                        {routing_key, <<"files.inbox">>}
+                      ]},
+        {ack_mode, on_confirm},
+        {reconnect_delay, 5}
+        ]}
+      ]},
+      {cega_verified, [
+        {source,  [
+                    {protocol, amqp091},
+                    {uris, ["amqp://${MQ_VHOST:-}"]},
+                    {declarations, [{'queue.declare', [{exclusive, true}] }, {'queue.bind', [{exchange, <<"sda">>}, {queue, <<>>}, {routing_key, <<"verified">>}] } ] },
+                    {queue, <<>>},
+                    {prefetch_count, 10}
+                  ]},
+        {destination, [
+                        {protocol, amqp091},
+                        {uris, ["amqp://${MQ_VHOST:-}"]},
+                        {declarations, []},
+                        {publish_properties, [{delivery_mode, 2}]},
+                        {publish_fields, [{exchange, <<"to_cega">>},
+                        {routing_key, <<"files.verified">>}
+                      ]},
+        {ack_mode, on_confirm},
+        {reconnect_delay, 5}
+        ]}
+      ]}
     ]}
-    ]}
+  ]}
 ].
 EOF
 chmod 600 "/var/lib/rabbitmq/advanced.config"
 else
 cat > "/var/lib/rabbitmq/definitions.json" <<EOF
 {
-  "rabbit_version": "3.7",
   "users": [
     {
       "name": "${MQ_USER}",
@@ -305,8 +331,15 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
     }
   ],
   "queues": [
-    {
+        {
       "name": "archived",
+      "vhost": "${MQ_VHOST:-/}",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+        {
+      "name": "completed",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
       "auto_delete": false,
@@ -320,35 +353,21 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "arguments": {}
     },
     {
-      "name": "files.completed",
+      "name": "inbox",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "files.verified",
+      "name": "ingest",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "files.error",
-      "vhost": "${MQ_VHOST:-/}",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {}
-    },
-    {
-      "name": "files.inbox",
-      "vhost": "${MQ_VHOST:-/}",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {}
-    },
-    {
-      "name": "files.processing",
+      "name": "mappings",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
       "auto_delete": false,
@@ -362,25 +381,16 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "arguments": {}
     },
     {
-      "name": "mappings",
+      "name": "verified",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
-    },
+    }
   ],
   "exchanges": [
     {
-      "name": "${MQ_EXCHANGE:-lega}",
-      "vhost": "${MQ_VHOST:-/}",
-      "type": "topic",
-      "durable": true,
-      "auto_delete": false,
-      "internal": false,
-      "arguments": {}
-    },
-     {
-      "name": "cega",
+      "name": "sda",
       "vhost": "${MQ_VHOST:-/}",
       "type": "topic",
       "durable": true,
