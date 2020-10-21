@@ -90,14 +90,21 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
     }
   ],
   "queues": [
-        {
+    {
       "name": "archived",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
-        {
+    {
+      "name": "backup",
+      "vhost": "${MQ_VHOST:-/}",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
       "name": "completed",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
@@ -183,6 +190,14 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "arguments": {},
         "destination": "accessionIDs",
         "routing_key": "accessionIDs"
+    },
+    {
+        "source": "sda",
+        "vhost": "${MQ_VHOST:-/}",
+        "destination_type": "queue",
+        "arguments": {},
+        "destination": "backup",
+        "routing_key": "backup"
     },
     {
         "source": "sda",
@@ -397,14 +412,21 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
     }
   ],
   "queues": [
-        {
+    {
       "name": "archived",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
-        {
+    {
+      "name": "backup",
+      "vhost": "${MQ_VHOST:-/}",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
       "name": "completed",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
@@ -488,6 +510,14 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "arguments": {},
         "destination": "accessionIDs",
         "routing_key": "accessionIDs"
+    },
+    {
+        "source": "sda",
+        "vhost": "${MQ_VHOST:-/}",
+        "destination_type": "queue",
+        "arguments": {},
+        "destination": "backup",
+        "routing_key": "backup"
     },
     {
         "source": "sda",
