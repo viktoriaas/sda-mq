@@ -709,7 +709,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "routing_key": "files"
     },
     {
-        "source": "localega",
+        "source": "sda",
         "vhost": "${MQ_VHOST:-/}",
         "destination_type": "queue",
         "arguments": {},
@@ -717,7 +717,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "routing_key": "inbox"
     },
     {
-        "source": "localega",
+        "source": "sda",
         "vhost": "${MQ_VHOST:-/}",
         "destination_type": "queue",
         "arguments": {},
