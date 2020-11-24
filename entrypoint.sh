@@ -392,6 +392,14 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "vhost": "${MQ_VHOST:-/}",
         "destination_type": "queue",
         "arguments": {},
+        "destination": "mappings",
+        "routing_key": "mappings"
+    },
+    {
+        "source": "sda",
+        "vhost": "${MQ_VHOST:-/}",
+        "destination_type": "queue",
+        "arguments": {},
         "destination": "verified",
         "routing_key": "verified"
     },
@@ -597,13 +605,6 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "arguments": {}
     },
     {
-      "name": "files",
-      "vhost": "${MQ_VHOST:-/}",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {}
-    },
-    {
       "name": "inbox",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
@@ -705,14 +706,6 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "vhost": "${MQ_VHOST:-/}",
         "destination_type": "queue",
         "arguments": {},
-        "destination": "files",
-        "routing_key": "files"
-    },
-    {
-        "source": "sda",
-        "vhost": "${MQ_VHOST:-/}",
-        "destination_type": "queue",
-        "arguments": {},
         "destination": "inbox",
         "routing_key": "inbox"
     },
@@ -723,6 +716,14 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "arguments": {},
         "destination": "ingest",
         "routing_key": "ingest"
+    },
+    {
+        "source": "sda",
+        "vhost": "${MQ_VHOST:-/}",
+        "destination_type": "queue",
+        "arguments": {},
+        "destination": "mappings",
+        "routing_key": "mappings"
     },
     {
         "source": "sda",
