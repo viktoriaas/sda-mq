@@ -626,6 +626,13 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "arguments": {}
     },
     {
+      "name": "metadata",
+      "vhost": "${MQ_VHOST:-/}",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
       "name": "accessionIDs",
       "vhost": "${MQ_VHOST:-/}",
       "durable": true,
@@ -643,15 +650,6 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
   "exchanges": [
     {
       "name": "sda",
-      "vhost": "${MQ_VHOST:-/}",
-      "type": "topic",
-      "durable": true,
-      "auto_delete": false,
-      "internal": false,
-      "arguments": {}
-    },
-     {
-      "name": "cega",
       "vhost": "${MQ_VHOST:-/}",
       "type": "topic",
       "durable": true,
@@ -724,6 +722,14 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "arguments": {},
         "destination": "mappings",
         "routing_key": "mappings"
+    },
+    {
+        "source": "sda",
+        "vhost": "${MQ_VHOST:-/}",
+        "destination_type": "queue",
+        "arguments": {},
+        "destination": "metadata",
+        "routing_key": "metadata"
     },
     {
         "source": "sda",
