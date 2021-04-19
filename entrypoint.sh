@@ -52,7 +52,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "name": "${MQ_VHOST:-/}"
     },
     {
-        "name": "errors"
+      "name": "errors"
     }
   ],
   "permissions": [
@@ -71,7 +71,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "read": ".*"
     }
   ],
-    "topic_permissions": [],
+  "topic_permissions": [],
   "parameters": [
     {
       "name": "CEGA-files",
@@ -154,7 +154,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "dest-add-forward-headers": true,
         "dest-exchange": "localega.v1",
         "dest-protocol": "amqp091",
-        "dest-uri": "${CEGA_CONNECTION}".
+        "dest-uri": "${CEGA_CONNECTION}",
         "reconnect-delay": 5,
         "src-delete-after": "never",
         "src-exchange": "to_cega",
@@ -323,7 +323,8 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "destination_type": "exchange",
         "routing_key": "files.error",
         "arguments": {}
-    },{
+    },
+    {
         "source": "sda",
         "vhost": "${MQ_VHOST:-/}",
         "destination_type": "queue",
