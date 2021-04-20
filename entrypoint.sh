@@ -53,6 +53,9 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
     },
     {
       "name": "errors"
+    },
+    {
+      "name": "federated"
     }
   ],
   "permissions": [
@@ -64,7 +67,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "read": ".*"
     },
     {
-      "user": "admin",
+      "user": "${MQ_USER}",
       "vhost": "federated",
       "configure": ".*",
       "write": ".*",
