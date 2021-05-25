@@ -301,14 +301,14 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "arguments": {}
     },
     {
-      "name": "vm.manager",
+      "name": "manager",
       "vhost": "vm",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "vm.register",
+      "name": "register",
       "vhost": "vm",
       "durable": true,
       "auto_delete": false,
@@ -350,6 +350,13 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "durable": true,
       "auto_delete": false,
       "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "error",
+      "vhost": "vm",
+      "durable": true,
+      "auto_delete": false,
       "arguments": {}
     }
   ],
@@ -463,16 +470,24 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "vhost": "vm",
         "destination_type": "queue",
         "arguments": {},
-        "destination": "vm.manager",
-        "routing_key": "vm.manager"
+        "destination": "manager",
+        "routing_key": "manager"
     },
     {
         "source": "vm",
         "vhost": "vm",
         "destination_type": "queue",
         "arguments": {},
-        "destination": "vm.register",
-        "routing_key": "vm.register"
+        "destination": "register",
+        "routing_key": "register"
+    },
+    {
+        "source": "sda",
+        "vhost": "vm",
+        "destination_type": "queue",
+        "arguments": {},
+        "destination": "error",
+        "routing_key": "error"
     }
   ]
 }
@@ -730,14 +745,21 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "arguments": {}
     },
     {
-      "name": "vm.manager",
+      "name": "manager",
       "vhost": "vm",
       "durable": true,
       "auto_delete": false,
       "arguments": {}
     },
     {
-      "name": "vm.register",
+      "name": "register",
+      "vhost": "vm",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "error",
       "vhost": "vm",
       "durable": true,
       "auto_delete": false,
@@ -850,16 +872,24 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "vhost": "vm",
         "destination_type": "queue",
         "arguments": {},
-        "destination": "vm.manager",
-        "routing_key": "vm.manager"
+        "destination": "manager",
+        "routing_key": "manager"
     },
     {
         "source": "vm",
         "vhost": "vm",
         "destination_type": "queue",
         "arguments": {},
-        "destination": "vm.register",
-        "routing_key": "vm.register"
+        "destination": "register",
+        "routing_key": "register"
+    },
+    {
+        "source": "sda",
+        "vhost": "vm",
+        "destination_type": "queue",
+        "arguments": {},
+        "destination": "error",
+        "routing_key": "error"
     }
   ]
 }
