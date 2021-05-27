@@ -56,6 +56,9 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
     },
     {
       "name": "federated"
+    },
+    {
+      "name": "vm"
     }
   ],
   "permissions": [
@@ -69,6 +72,13 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
     {
       "user": "${MQ_USER}",
       "vhost": "federated",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "${MQ_USER}",
+      "vhost": "vm",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
@@ -200,6 +210,16 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "ha-sync-mode": "automatic",
         "ha-sync-batch-size": 1
       }
+    },
+    {
+      "name": "ha-vm",
+      "pattern": ".*",
+      "vhost": "vm",
+      "definition": {
+        "ha-mode": "all",
+        "ha-sync-mode": "automatic",
+        "ha-sync-batch-size": 1
+      }
     }
   ],
   "queues": [
@@ -279,6 +299,20 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "durable": true,
       "auto_delete": false,
       "arguments": {}
+    },
+    {
+      "name": "manager",
+      "vhost": "vm",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "register",
+      "vhost": "vm",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
     }
   ],
   "exchanges": [
@@ -307,6 +341,22 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "durable": true,
       "auto_delete": false,
       "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "vm",
+      "vhost": "vm",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "error",
+      "vhost": "vm",
+      "durable": true,
+      "auto_delete": false,
       "arguments": {}
     }
   ],
@@ -414,6 +464,30 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "destination_type": "queue",
         "routing_key": "files.error",
         "arguments": {}
+    },
+    {
+        "source": "vm",
+        "vhost": "vm",
+        "destination_type": "queue",
+        "arguments": {},
+        "destination": "manager",
+        "routing_key": "manager"
+    },
+    {
+        "source": "vm",
+        "vhost": "vm",
+        "destination_type": "queue",
+        "arguments": {},
+        "destination": "register",
+        "routing_key": "register"
+    },
+    {
+        "source": "sda",
+        "vhost": "vm",
+        "destination_type": "queue",
+        "arguments": {},
+        "destination": "error",
+        "routing_key": "error"
     }
   ]
 }
@@ -549,12 +623,22 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
   "vhosts": [
     {
       "name": "${MQ_VHOST:-/}"
+    },
+    {
+      "name": "vm"
     }
   ],
   "permissions": [
     {
       "user": "${MQ_USER}",
       "vhost": "${MQ_VHOST:-/}",
+      "configure": ".*",
+      "write": ".*",
+      "read": ".*"
+    },
+    {
+      "user": "${MQ_USER}",
+      "vhost": "vm",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
@@ -572,6 +656,16 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "name": "ha-all",
       "pattern": ".*",
       "vhost": "${MQ_VHOST:-/}",
+      "definition": {
+        "ha-mode": "all",
+        "ha-sync-mode": "automatic",
+        "ha-sync-batch-size": 1
+      }
+    },
+    {
+      "name": "ha-vm",
+      "pattern": ".*",
+      "vhost": "vm",
       "definition": {
         "ha-mode": "all",
         "ha-sync-mode": "automatic",
@@ -649,12 +743,42 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "durable": true,
       "auto_delete": false,
       "arguments": {}
+    },
+    {
+      "name": "manager",
+      "vhost": "vm",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "register",
+      "vhost": "vm",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
+    },
+    {
+      "name": "error",
+      "vhost": "vm",
+      "durable": true,
+      "auto_delete": false,
+      "arguments": {}
     }
   ],
   "exchanges": [
     {
       "name": "sda",
       "vhost": "${MQ_VHOST:-/}",
+      "type": "topic",
+      "durable": true,
+      "auto_delete": false,
+      "internal": false,
+      "arguments": {}
+    },
+    {
+      "name": "vm",
+      "vhost": "vm",
       "type": "topic",
       "durable": true,
       "auto_delete": false,
@@ -742,6 +866,30 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "arguments": {},
         "destination": "verified",
         "routing_key": "verified"
+    },
+    {
+        "source": "vm",
+        "vhost": "vm",
+        "destination_type": "queue",
+        "arguments": {},
+        "destination": "manager",
+        "routing_key": "manager"
+    },
+    {
+        "source": "vm",
+        "vhost": "vm",
+        "destination_type": "queue",
+        "arguments": {},
+        "destination": "register",
+        "routing_key": "register"
+    },
+    {
+        "source": "sda",
+        "vhost": "vm",
+        "destination_type": "queue",
+        "arguments": {},
+        "destination": "error",
+        "routing_key": "error"
     }
   ]
 }
