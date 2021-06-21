@@ -52,12 +52,6 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "name": "${MQ_VHOST:-/}"
     },
     {
-      "name": "errors"
-    },
-    {
-      "name": "federated"
-    },
-    {
       "name": "vm"
     }
   ],
@@ -65,13 +59,6 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
     {
       "user": "${MQ_USER}",
       "vhost": "${MQ_VHOST:-/}",
-      "configure": ".*",
-      "write": ".*",
-      "read": ".*"
-    },
-    {
-      "user": "${MQ_USER}",
-      "vhost": "federated",
       "configure": ".*",
       "write": ".*",
       "read": ".*"
@@ -96,105 +83,6 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "trust-user-id": false,
         "uri": "${CEGA_CONNECTION}"
       }
-    },
-    {
-      "value": {
-        "ack-mode": "on-confirm",
-        "dest-exchange": "amq.fanout",
-        "dest-exchange-key": "files.error",
-        "dest-protocol": "amqp091",
-        "dest-uri": "amqp:///federated",
-        "src-delete-after": "never",
-        "src-protocol": "amqp091",
-        "src-queue": "error",
-        "src-uri": "amqp:///federated"
-      },
-      "vhost": "federated",
-      "component": "shovel",
-      "name": "fanout"
-    },
-    {
-      "value": {
-        "ack-mode": "on-confirm",
-        "dest-exchange": "to_cega",
-        "dest-exchange-key": "files.verified",
-        "dest-protocol": "amqp091",
-        "dest-uri": "amqp:///federated",
-        "src-delete-after": "never",
-        "src-protocol": "amqp091",
-        "src-queue": "verified",
-        "src-uri": "amqp:///federated"
-      },
-      "vhost": "federated",
-      "component": "shovel",
-      "name": "cega_verified"
-    },
-    {
-      "value": {
-        "ack-mode": "on-confirm",
-        "dest-exchange": "to_cega",
-        "dest-exchange-key": "files.inbox",
-        "dest-protocol": "amqp091",
-        "dest-uri": "amqp:///federated",
-        "src-delete-after": "never",
-        "src-protocol": "amqp091",
-        "src-queue": "inbox",
-        "src-uri": "amqp:///federated"
-      },
-      "vhost": "federated",
-      "component": "shovel",
-      "name": "cega_inbox"
-    },
-    {
-      "value": {
-        "ack-mode": "on-confirm",
-        "dest-exchange": "to_cega",
-        "dest-exchange-key": "files.completed",
-        "dest-protocol": "amqp091",
-        "dest-uri": "amqp:///federated",
-        "src-delete-after": "never",
-        "src-protocol": "amqp091",
-        "src-queue": "completed",
-        "src-uri": "amqp:///federated"
-      },
-      "vhost": "federated",
-      "component": "shovel",
-      "name": "cega_completion"
-    },
-    {
-      "value": {
-        "ack-mode": "on-confirm",
-        "dest-add-forward-headers": true,
-        "dest-exchange": "localega.v1",
-        "dest-protocol": "amqp091",
-        "dest-uri": "${CEGA_CONNECTION}",
-        "reconnect-delay": 5,
-        "src-delete-after": "never",
-        "src-exchange": "to_cega",
-        "src-exchange-key": "#",
-        "src-protocol": "amqp091",
-        "src-uri": "amqp:///federated"
-      },
-      "vhost": "federated",
-      "component": "shovel",
-      "name": "to_cega"
-    },
-    {
-      "value": {
-        "ack-mode": "on-confirm",
-        "dest-add-forward-headers": false,
-        "dest-protocol": "amqp091",
-        "dest-queue": "error",
-        "dest-uri": "amqp:///errors",
-        "src-delete-after": "never",
-        "src-exchange": "to_errors",
-        "src-exchange-key": "#",
-        "src-protocol": "amqp091",
-        "src-uri": "amqp:///federated"
-      },
-      "vhost": "federated",
-      "component": "shovel",
-      "name": "to_errors"
     }
   ],
   "policies": [
@@ -287,20 +175,6 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "arguments": {}
     },
     {
-      "name": "cega_errors",
-      "vhost": "federated",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {}
-    },
-    {
-      "name": "error",
-      "vhost": "errors",
-      "durable": true,
-      "auto_delete": false,
-      "arguments": {}
-    },
-    {
       "name": "manager",
       "vhost": "vm",
       "durable": true,
@@ -323,15 +197,6 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
       "durable": true,
       "auto_delete": false,
       "internal": false,
-      "arguments": {}
-    },
-    {
-      "name": "to_errors",
-      "vhost": "federated",
-      "type": "topic",
-      "durable": true,
-      "auto_delete": false,
-      "internal": true,
       "arguments": {}
     },
     {
@@ -361,22 +226,6 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
     }
   ],
   "bindings": [
-    {
-        "source": "amq.fanout",
-        "vhost": "federated",
-        "destination": "to_cega",
-        "destination_type": "exchange",
-        "routing_key": "files.error",
-        "arguments": {}
-    },
-    {
-        "source": "amq.fanout",
-        "vhost": "federated",
-        "destination": "to_errors",
-        "destination_type": "exchange",
-        "routing_key": "files.error",
-        "arguments": {}
-    },
     {
         "source": "sda",
         "vhost": "${MQ_VHOST:-/}",
@@ -458,14 +307,6 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "routing_key": "verified"
     },
     {
-        "source": "to_cega",
-        "vhost": "federated",
-        "destination": "cega_errors",
-        "destination_type": "queue",
-        "routing_key": "files.error",
-        "arguments": {}
-    },
-    {
         "source": "vm",
         "vhost": "vm",
         "destination_type": "queue",
@@ -482,7 +323,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "routing_key": "register"
     },
     {
-        "source": "sda",
+        "source": "vm",
         "vhost": "vm",
         "destination_type": "queue",
         "arguments": {},
@@ -884,7 +725,7 @@ cat > "/var/lib/rabbitmq/definitions.json" <<EOF
         "routing_key": "register"
     },
     {
-        "source": "sda",
+        "source": "vm",
         "vhost": "vm",
         "destination_type": "queue",
         "arguments": {},
