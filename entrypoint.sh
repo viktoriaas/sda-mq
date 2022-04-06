@@ -561,6 +561,10 @@ else
 fi
 
 chmod 600 "/var/lib/rabbitmq/definitions.json"
-chmod g-rw "/var/lib/rabbitmq/.erlang.cookie"
+
+cookie_file="/var/lib/rabbitmq/.erlang.cookie"
+if [ -f "$cookie_file" ]; then
+    chmod g-rw "$cookie_file"
+fi
 
 exec "$@"
